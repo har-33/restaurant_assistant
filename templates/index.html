@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Restaurant Dashboard</title>
+  <style>
+    body { font-family: Arial; margin: 20px; max-width: 900px; }
+    .menu, .orders { margin: 16px 0; }
+    table { width:100%; border-collapse: collapse; }
+    th,td { padding:10px; border:1px solid #ddd; text-align:left }
+    button{ padding:8px 12px }
+  </style>
+</head>
+<body>
+  <h1>🍕 Restaurant Orders Dashboard</h1>
+
+  <div class="orders">
+    <h2>All Orders</h2>
+    <table id="ordersTable">
+      <thead><tr><th>Customer</th><th>Item</th><th>Price</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="menu">
+    <h2>Place New Order</h2>
+    <label>Customer: <input id="customer" /></label><br/><br/>
+    <label>Item: <input id="item" /></label><br/><br/>
+    <label>Price: <input id="price" type="number" /></label><br/><br/>
+    <button id="placeBtn">Place Order</button>
+    <div id="msg"></div>
+  </div>
+
+<script>
+const API_BASE = window.location.origin;
+
+async function loadOrders() {
+  const res = await fetch(API_BASE + '/orders');
+  const data = await res.json();
+  const tbody = document.querySelector('#ordersTable tbody');
+  tbody.innerHTML = '';
+  data.forEach(o => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${o.customer ?? ''}</td><td>${o.item ?? ''}</td><td>${o.price ?? ''}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById('placeBtn').onclick = async () => {
+  const customer = document.getElementById('customer').value.trim();
+  const item = document.getElementById('item').value.trim();
+  const price = Number(document.getElementById('price').value || 0);
+  const payload = { customer, item, price };
+
+  const res = await fetch(API_BASE + '/orders', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  });
+  
+  const j = await res.json().catch(()=>({}));
+  document.getElementById('msg').textContent = j.message || JSON.stringify(j);
+  await loadOrders();
+}
+
+loadOrders();
+</script>
+</body>
+</html>
