@@ -25,7 +25,7 @@ def get_orders():
 def add_order():
     data = request.get_json()
     if not data:
-        return {"error": "No data provided"}, 400
+        return {"error": "No data provided"}
     orders.insert_one(data)
     return {"message": "Order added successfully!"}
 
