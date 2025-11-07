@@ -8,7 +8,7 @@ app = Flask(__name__)
 CORS(app)
 
 # MongoDB Atlas connection
-client = MongoClient("mongodb+srv://harshad:harshad21@test.l765a1d.mongodb.net/")
+client = MongoClient("mongodb+srv://harshad:harshad21@cluster0.nn5pcvb.mongodb.net/")
 db = client["restaurant_db"]
 orders = db["orders"]
 
