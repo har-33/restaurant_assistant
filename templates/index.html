@@ -1,69 +1,63 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <title>Restaurant Dashboard</title>
-  <style>
-    body { font-family: Arial; margin: 20px; max-width: 900px; }
-    .menu, .orders { margin: 16px 0; }
-    table { width:100%; border-collapse: collapse; }
-    th,td { padding:10px; border:1px solid #ddd; text-align:left }
-    button{ padding:8px 12px }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Restaurant Voice Chatbot</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f5f5f5; text-align: center; padding: 30px; }
+button { padding: 12px 20px; font-size: 16px; border-radius: 10px; border: none; cursor: pointer; }
+#output { margin-top: 20px; font-size: 18px; }
+</style>
 </head>
 <body>
-  <h1>🍕 Restaurant Orders Dashboard</h1>
+<h2>🎙️ Restaurant Voice Chatbot</h2>
+<p>Click below and start speaking...</p>
 
-  <div class="orders">
-    <h2>All Orders</h2>
-    <table id="ordersTable">
-      <thead><tr><th>Customer</th><th>Item</th><th>Price</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </div>
+<button id="talkBtn">🎤 Talk</button>
 
-  <div class="menu">
-    <h2>Place New Order</h2>
-    <label>Customer: <input id="customer" /></label><br/><br/>
-    <label>Item: <input id="item" /></label><br/><br/>
-    <label>Price: <input id="price" type="number" /></label><br/><br/>
-    <button id="placeBtn">Place Order</button>
-    <div id="msg"></div>
-  </div>
+<div id="output"></div>
 
 <script>
-const API_BASE = window.location.origin;
+const btn = document.getElementById("talkBtn");
+const output = document.getElementById("output");
+const API_URL = "https://restaurant-assistant-bp7k.onrender.com/chat"; // your Render link
 
-async function loadOrders() {
-  const res = await fetch(API_BASE + '/orders');
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = new SpeechRecognition();
+recognition.lang = "en-US";
+recognition.interimResults = false;
+
+btn.addEventListener("click", () => {
+  recognition.start();
+  output.innerHTML = "🎧 Listening...";
+});
+
+recognition.onresult = async (event) => {
+  const text = event.results[0][0].transcript;
+  output.innerHTML = `🗣️ You: ${text}`;
+
+  // send to Flask backend
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: text })
+  });
+
   const data = await res.json();
-  const tbody = document.querySelector('#ordersTable tbody');
-  tbody.innerHTML = '';
-  data.forEach(o => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${o.customer ?? ''}</td><td>${o.item ?? ''}</td><td>${o.price ?? ''}</td>`;
-    tbody.appendChild(tr);
-  });
+  const reply = data.reply;
+  output.innerHTML += `<br>🤖 Bot: ${reply}`;
+
+  speak(reply);
+};
+
+function speak(text) {
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.pitch = 1;
+  utter.rate = 1;
+  utter.voice = speechSynthesis.getVoices().find(v => v.name.toLowerCase().includes("male")) || null;
+  speechSynthesis.speak(utter);
 }
-
-document.getElementById('placeBtn').onclick = async () => {
-  const customer = document.getElementById('customer').value.trim();
-  const item = document.getElementById('item').value.trim();
-  const price = Number(document.getElementById('price').value || 0);
-  const payload = { customer, item, price };
-
-  const res = await fetch(API_BASE + '/orders', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify(payload)
-  });
-  
-  const j = await res.json().catch(()=>({}));
-  document.getElementById('msg').textContent = j.message || JSON.stringify(j);
-  await loadOrders();
-}
-
-loadOrders();
 </script>
 </body>
 </html>
