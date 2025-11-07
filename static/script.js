@@ -1,48 +1,37 @@
-const chatBox = document.getElementById("chat-box");
-const input = document.getElementById("userInput");
-
 async function sendMessage() {
-    const message = input.value;
-    if (!message) return;
-    addMessage("🧑 You: " + message);
+    const input = document.getElementById("user-input");
+    const chatBox = document.getElementById("chat-box");
+
+    const userMsg = input.value.trim();
+    if (!userMsg) return;
+
+    chatBox.innerHTML += `<div class='user'>🧑 You: ${userMsg}</div>`;
+    input.value = "";
 
     const res = await fetch("/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message: userMsg })
     });
 
     const data = await res.json();
-    addMessage("🤖 Bot: " + data.reply);
-    speakText(data.reply);
-
-    input.value = "";
-}
-
-function addMessage(text) {
-    const p = document.createElement("p");
-    p.textContent = text;
-    chatBox.appendChild(p);
+    chatBox.innerHTML += `<div class='bot'>🤖 Bot: ${data.reply}</div>`;
     chatBox.scrollTop = chatBox.scrollHeight;
+
+    // Speak bot response
+    const synth = window.speechSynthesis;
+    const utter = new SpeechSynthesisUtterance(data.reply);
+    synth.speak(utter);
 }
 
-// 🎤 Voice input using Web Speech API
-function speak() {
-    const recognition = new webkitSpeechRecognition();
+function startVoice() {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = "en-US";
     recognition.start();
 
-    recognition.onresult = (event) => {
-        const userText = event.results[0][0].transcript;
-        input.value = userText;
+    recognition.onresult = function(event) {
+        const text = event.results[0][0].transcript;
+        document.getElementById("user-input").value = text;
         sendMessage();
     };
-}
-
-// 🔊 Bot voice output
-function speakText(text) {
-    const speech = new SpeechSynthesisUtterance(text);
-    speech.rate = 1;
-    speech.pitch = 1;
-    window.speechSynthesis.speak(speech);
 }

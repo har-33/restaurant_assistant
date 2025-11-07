@@ -1,4 +1,7 @@
-Flask
+fastapi
+uvicorn
+jinja2
 pymongo
-flask-cors
-gunicorn
+pyttsx3
+SpeechRecognition
+pyaudio

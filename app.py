@@ -1,45 +1,42 @@
-from flask import Flask, render_template, request, jsonify
-from pymongo import MongoClient
-from flask_cors import CORS
-import os
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from chatbot import chatbot_reply
+from database import orders_collection
+import uvicorn
 
-app = Flask(__name__, static_folder="static", template_folder="templates")
-CORS(app)
+app = FastAPI()
 
-# MongoDB connection
-client = MongoClient("mongodb+srv://harshad:harshad21@cluster0.nn5pcvb.mongodb.net/")
-db = client["restaurant_db"]
-orders = db["orders"]
+# Serve static files and templates
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
-@app.route('/')
-def home():
-    return render_template("index.html")
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
-@app.route('/orders', methods=['GET'])
-def get_orders():
-    data = list(orders.find({}, {"_id": 0}))
-    return jsonify(data)
+@app.get("/menu")
+async def get_menu():
+    menu = [
+        {"item": "Cheese Pizza", "price": 299},
+        {"item": "Veg Burger", "price": 199},
+        {"item": "French Fries", "price": 99},
+        {"item": "Coke", "price": 49}
+    ]
+    return {"menu": menu}
 
-@app.route('/orders', methods=['POST'])
-def add_order():
-    data = request.json
-    orders.insert_one(data)
-    return jsonify({"message": "Order added successfully!"})
+@app.post("/order")
+async def place_order(order: dict):
+    orders_collection.insert_one(order)
+    return {"message": "Order placed successfully!"}
 
-@app.route('/chat', methods=['POST'])
-def chat():
-    user_input = request.json.get("message", "").lower()
-
-    if "hello" in user_input or "hi" in user_input:
-        return jsonify({"reply": "Hello! How can I help you today?"})
-    elif "menu" in user_input:
-        return jsonify({"reply": "We have pizza, burgers, fries, and cold drinks."})
-    elif "pizza" in user_input:
-        return jsonify({"reply": "Great choice! Our cheese pizza is the best seller."})
-    elif "bye" in user_input:
-        return jsonify({"reply": "Goodbye! Have a great day!"})
-    else:
-        return jsonify({"reply": "Sorry, I didn’t quite get that. Could you repeat?"})
+@app.post("/chat")
+async def chat(request: Request):
+    data = await request.json()
+    user_message = data.get("message", "")
+    reply = chatbot_reply(user_message)
+    return JSONResponse({"reply": reply})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    uvicorn.run("app:app", host="0.0.0.0", port=8000)
