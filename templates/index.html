@@ -1,63 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Restaurant Voice Chatbot</title>
-<style>
-body { font-family: Arial, sans-serif; background: #f5f5f5; text-align: center; padding: 30px; }
-button { padding: 12px 20px; font-size: 16px; border-radius: 10px; border: none; cursor: pointer; }
-#output { margin-top: 20px; font-size: 18px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Voice Chatbot</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<h2>🎙️ Restaurant Voice Chatbot</h2>
-<p>Click below and start speaking...</p>
+    <h2>🍕 Restaurant Chatbot</h2>
 
-<button id="talkBtn">🎤 Talk</button>
+    <div id="chat-box"></div>
 
-<div id="output"></div>
+    <div class="controls">
+        <input type="text" id="userInput" placeholder="Type your message..." />
+        <button onclick="sendMessage()">Send</button>
+        <button onclick="speak()">🎤 Voice</button>
+    </div>
 
-<script>
-const btn = document.getElementById("talkBtn");
-const output = document.getElementById("output");
-const API_URL = "https://restaurant-assistant-bp7k.onrender.com/chat"; // your Render link
-
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-const recognition = new SpeechRecognition();
-recognition.lang = "en-US";
-recognition.interimResults = false;
-
-btn.addEventListener("click", () => {
-  recognition.start();
-  output.innerHTML = "🎧 Listening...";
-});
-
-recognition.onresult = async (event) => {
-  const text = event.results[0][0].transcript;
-  output.innerHTML = `🗣️ You: ${text}`;
-
-  // send to Flask backend
-  const res = await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: text })
-  });
-
-  const data = await res.json();
-  const reply = data.reply;
-  output.innerHTML += `<br>🤖 Bot: ${reply}`;
-
-  speak(reply);
-};
-
-function speak(text) {
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.pitch = 1;
-  utter.rate = 1;
-  utter.voice = speechSynthesis.getVoices().find(v => v.name.toLowerCase().includes("male")) || null;
-  speechSynthesis.speak(utter);
-}
-</script>
+    <script src="/static/script.js"></script>
 </body>
 </html>
