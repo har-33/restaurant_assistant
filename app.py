@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -5,16 +6,20 @@ from fastapi.templating import Jinja2Templates
 from chatbot import chatbot_reply
 from database import orders_collection
 
+# ✅ Create FastAPI app
 app = FastAPI()
 
-# Serve static files and templates
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+# ✅ Use absolute paths for templates & static (fix Render 500 error)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
+# ✅ Home page
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+# ✅ Menu endpoint
 @app.get("/menu")
 async def get_menu():
     menu = [
@@ -25,11 +30,13 @@ async def get_menu():
     ]
     return {"menu": menu}
 
+# ✅ Order endpoint
 @app.post("/order")
 async def place_order(order: dict):
     orders_collection.insert_one(order)
     return {"message": "Order placed successfully!"}
 
+# ✅ Chat endpoint
 @app.post("/chat")
 async def chat(request: Request):
     data = await request.json()
@@ -37,6 +44,8 @@ async def chat(request: Request):
     reply = chatbot_reply(user_message)
     return JSONResponse({"reply": reply})
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+# ✅ Health check endpoint (for testing deployment)
+@app.get("/ping")
+async def ping():
+    return {"status": "ok"}
+
