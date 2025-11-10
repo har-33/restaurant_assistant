@@ -6,37 +6,37 @@ from fastapi.templating import Jinja2Templates
 from chatbot import chatbot_reply
 from database import orders_collection
 
-# ✅ Create FastAPI app
+# ✅ Initialize FastAPI app
 app = FastAPI()
 
-# ✅ Use absolute paths for templates & static (fix Render 500 error)
+# ✅ Set correct absolute paths (important for Render)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
-# ✅ Home page
+# ✅ Homepage
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-# ✅ Menu endpoint
+# ✅ Menu API
 @app.get("/menu")
 async def get_menu():
     menu = [
         {"item": "Cheese Pizza", "price": 299},
         {"item": "Veg Burger", "price": 199},
         {"item": "French Fries", "price": 99},
-        {"item": "Coke", "price": 49}
+        {"item": "Coke", "price": 49},
     ]
     return {"menu": menu}
 
-# ✅ Order endpoint
+# ✅ Order API
 @app.post("/order")
 async def place_order(order: dict):
     orders_collection.insert_one(order)
     return {"message": "Order placed successfully!"}
 
-# ✅ Chat endpoint
+# ✅ Chatbot API
 @app.post("/chat")
 async def chat(request: Request):
     data = await request.json()
@@ -44,8 +44,12 @@ async def chat(request: Request):
     reply = chatbot_reply(user_message)
     return JSONResponse({"reply": reply})
 
-# ✅ Health check endpoint (for testing deployment)
+# ✅ Health Check (Render debug)
 @app.get("/ping")
 async def ping():
     return {"status": "ok"}
 
+# ✅ Local run only (Render ignores this)
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
