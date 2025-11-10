@@ -1,34 +1,34 @@
-import pyttsx3
-import speech_recognition as sr
+#◘import pyttsx3
+#import speech_recognition as sr
 
 # 🎙️ Text-to-speech
-def speak(text):
-    engine = pyttsx3.init()
-    engine.setProperty('rate', 170)
-    voices = engine.getProperty('voices')
-    engine.setProperty('voice', voices[0].id)  # [0] for male, [1] for female (you can change)
-    engine.say(text)
-    engine.runAndWait()
+#def speak(text):
+#    engine = pyttsx3.init()
+#    engine.setProperty('rate', 170)
+#    voices = engine.getProperty('voices')
+#    engine.setProperty('voice', voices[0].id)  # [0] for male, [1] for female (you can change)
+#    engine.say(text)
+#    engine.runAndWait()
 
-# 🎧 Speech-to-text
-def listen():
-    r = sr.Recognizer()
-    with sr.Microphone() as source:
-        print("🎤 Listening... Speak now.")
-        r.adjust_for_ambient_noise(source, duration=0.5)
-        audio = r.listen(source)
+#🎧 Speech-to-text
+#def listen():
+#    r = sr.Recognizer()
+#    with sr.Microphone() as source:
+#        print("🎤 Listening... Speak now.")
+#        r.adjust_for_ambient_noise(source, duration=0.5)
+#        audio = r.listen(source)
 
-    try:
-        text = r.recognize_google(audio)
-        print(f"🗣️ You said: {text}")
-        return text
-    except sr.UnknownValueError:
-        print("🤖 Bot: Sorry, I didn’t catch that.")
-        speak("Sorry, I didn’t catch that.")
-        return ""
-    except sr.RequestError:
-        print("⚠️ Could not connect to speech recognition service.")
-        return ""
+#    try:
+#        text = r.recognize_google(audio)
+#        print(f"🗣️ You said: {text}")
+#        return text
+#    except sr.UnknownValueError:
+#        print("🤖 Bot: Sorry, I didn’t catch that.")
+#        speak("Sorry, I didn’t catch that.")
+#        return ""
+#    except sr.RequestError:
+#        print("⚠️ Could not connect to speech recognition service.")
+#        return ""
 
 # 💬 Chatbot logic
 def chatbot_reply(text):

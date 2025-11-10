@@ -3,4 +3,4 @@ uvicorn
 jinja2
 pymongo
 gunicorn
-pyaudio
+#pyaudio
