@@ -4,7 +4,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from chatbot import chatbot_reply
 from database import orders_collection
-import uvicorn
 
 app = FastAPI()
 
@@ -39,4 +38,5 @@ async def chat(request: Request):
     return JSONResponse({"reply": reply})
 
 if __name__ == "__main__":
-    uvicorn.run("app:app", host="0.0.0.0", port=8000)
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
