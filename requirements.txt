@@ -2,6 +2,3 @@ fastapi
 uvicorn
 jinja2
 pymongo
-pyttsx3
-SpeechRecognition
-pyaudio
