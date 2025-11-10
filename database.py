@@ -2,7 +2,7 @@ from pymongo import MongoClient
 import os
 
 # ✅ Environment variable support for Render
-MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://harshad:harshad21@cluster0.nn5pcvb.mongodb.net/")
+MONGO_URI = os.getenv("mongodb+srv://harshad:harshad21@cluster0.nn5pcvb.mongodb.net/")
 
 client = MongoClient(MONGO_URI)
 db = client["restaurant_db"]
